@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>关键字检索</title>
+
+    <script src="https://www.tutorialspoint.com/jquery/jquery-3.6.0.js"></script>
+</head>
+
+<body>
+    <div><button id="data">sc</button>
+    <div id="555"> </div>
+
+    
+</body>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#data").on('click',function () {
+            $.ajax({
+                url: 'http://lsj-2.frp.one:36318/items/5?q=somequery',
+                type: 'GET',
+                contentType: false,
+                processData: false,
+                cache: false,
+                success: function (data) {
+                    if (data) {
+                        document.getElementById('555').innerText=data.item_id
+                    } else {
+                        alert("查询失败");
+                    }
+                }
+            });
+        })
+    })
+
+
+</script>
+
+</html>

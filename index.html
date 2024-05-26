@@ -1,0 +1,205 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>公路资产数字化</title>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <script src="https://www.tutorialspoint.com/jquery/jquery-3.6.0.js"></script>
+    <script src="https://cdn.bootcss.com/toastr.js/latest/js/toastr.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.bootcss.com/toastr.js/latest/css/toastr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script
+        src="https://webapi.amap.com/maps?v=2.0&key=e8f8c0b861cb13001d13eb1ec4cb7bed&plugin=AMap.AutoComplete"></script>
+    <!-- UI组件库 1.0 -->
+    <script src="https://webapi.amap.com/ui/1.1/main.js?v=1.1.1"></script>
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+
+</head>
+<style type="text/css">
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        margin: 0px; 
+
+    }
+
+    .map {
+        height: 100%;
+        width: 100%;
+        float: left;
+    }
+</style>
+
+<body>
+    <header class="header" role="banner">
+        <h1 class="logo">
+            <a href="#">数字化 <span>Dev</span></a>
+        </h1>
+        <div class="nav-wrap">
+            <nav class="main-nav" role="navigation">
+                <ul class="unstyled list-hover-slide">
+                    <li><a href="#" id="show">地图首页</a></li>
+                    <li><a href="#" id="hide">数据总表</a></li>
+                </ul>
+            </nav>
+            <button id="down" style="width: 100%;height: 4em;">下载</button>
+            <button style="width: 100%;height: 4em;" visibility: hidden>上传xls数据</button>
+        </div>
+    </header>
+    <div></div>
+    <div class='containers' id="data">
+        <div class="scroll">
+            <table class="datatable">
+                <thead>
+                    <tr>
+                        <th scope="col">id</th>
+                        <th scope="col">经纬度</th>
+                        <th scope="col">区域划分</th>
+                        <th scope="col">路域类型</th>
+                        <th scope="col">具体位置</th>
+                        <th scope="col">标牌设置目的</th>
+                        <th scope="col">标牌尺寸结构</th>
+                        <th scope="col">图片路径</th>
+                        <th scope="col">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="databody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <div id="container" class="map"></div>
+    <div class="input-card" id="containerinput">
+        <div>
+            <div id="info_l">
+                <h4>交安设施信息：</h4>
+            </div>
+            <div id="info_r">
+                <button id="btn_submit" visibility: hidden>从剪切板复制</button>
+            </div>
+
+        </div>
+
+        <div class="input-item">
+            <label for="fname">经纬度坐标：</label>
+            <input type="text" readonly="true" id="LngLat">
+        </div>
+        <div class="input-item">
+            <label for="fname">区域划分：</label>
+            <input type="text" id="MaintainStation">
+        </div>
+        <div class="input-item">
+            <label for="fname">路域类型：</label>
+            <input type="text" id="DesignStation">
+
+        </div>
+        <div class="input-item">
+            <label for="fname">具体位置：</label>
+            <input type="text" id="RoadName">
+        </div>
+        <div class="input-item">
+            <label for="fname">标牌设置目的：</label>
+            <input type="text" id="Information">
+        </div>
+        <div class="input-item">
+            <label for="fname">标牌尺寸结构：</label>
+            <input type="text" id="Direction">
+        </div>
+        <div id="drop_zone" >拖拽到这里获取图片名称</div>
+        <output id="list"></output>
+
+        <button class="ddt" type="button" id="save">保存</button>
+
+    </div>
+    <script type="text/javascript" src="./gd.js"></script>
+    <script type="text/javascript" src="./img.js"></script>
+    <script src="FileSaver.js"></script>
+    <script src=offiuce.js></script>
+    <script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <script>
+
+        document.addEventListener('paste', event => {
+            event.clipboardData.types.map(type => { console.log(type) })
+            const html = event.clipboardData.getData('text/html');
+            //const html = event.clipboardData.getData('image/svg+xml');
+            //const html = event.clipboardData.getData('text/rtf');
+            const $doc = new DOMParser().parseFromString(html, 'text/html');
+            // 加载所有的行
+            const $trs = Array.from($doc.querySelectorAll('table tr'));
+            data0 = $trs[0]
+
+            //填充信息卡
+            document.getElementById("MaintainStation").value = Array.from(data0.querySelectorAll('td'))[0].innerText
+            document.getElementById("DesignStation").value = Array.from(data0.querySelectorAll('td'))[1].innerText
+            document.getElementById("RoadName").value = Array.from(data0.querySelectorAll('td'))[2].innerText
+            document.getElementById("Information").value = Array.from(data0.querySelectorAll('td'))[3].innerText
+            var biaopai1=Array.from(data0.querySelectorAll('td'))[4].innerText
+            var biaopai2=Array.from(data0.querySelectorAll('td'))[5].innerText
+        
+            document.getElementById("Direction").value = biaopai1+biaopai2
+
+
+            console.log(data0)
+            //var imgsrc = Array.from(data0.querySelectorAll('td'))[5].querySelectorAll('img')[0].getAttribute("src");
+            ///document.getElementById('list').value = imgsrc;
+
+            //ToBase64(imgsrc)
+            //console.log(Array.from(data0.querySelectorAll('td'))[5].querySelectorAll('img')[0].getAttribute("src"))
+        })
+        function ToBase64(img) {
+            //传入图片路径，返回base64
+            function getBase64Image(img, width, height) {
+                //width、height调用时传入具体像素值，控制大小 ,不传则默认图像大小
+                var canvas = document.createElement("canvas");
+                canvas.width = width ? width : img.width;
+                canvas.height = height ? height : img.height;
+
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                var dataURL = canvas.toDataURL();
+                return dataURL;
+            }
+            var image = new Image();
+            image.crossOrigin = "";
+            image.src = img;
+            var deferred = $.Deferred();
+            if (img) {
+                image.onload = function () {
+                    deferred.resolve(getBase64Image(image)); //将base64传给done上传处理
+                };
+                return deferred.promise(); //问题要让onload完成后再return sessionStorage['imgTest']
+            }
+        }
+        $(document).ready(function () {
+            //$('#data').DataTable();
+            //window.localStorage.clear(); //清除缓存
+
+            $("#containerinput").hide();
+            $("#data").hide();
+            $("#hide").click(function () {
+                $("#container").hide();
+                $("#containerinput").hide();
+                $("#data").show();
+            });
+
+            $("#show").click(function () {
+                $("#container").show();
+                $("#data").hide();
+            });
+        });
+    </script>
+</body>
+
+</html>
